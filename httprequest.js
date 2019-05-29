@@ -1,7 +1,7 @@
 const https = require('https');
 const parseJsonResponse = require('./parseJsonData');
 
-function httprequest(path, callback) {
+function httpRequest(path) {
     const options = {
         hostname: path.host,
         port: 443,
@@ -10,20 +10,23 @@ function httprequest(path, callback) {
         path: path.pathname + path.search
     };
 
-    const req = https.request(options, (res) => {
-        let data = '';
-        res.on('data', (d) => {
-            data += d;
-        });
-        res.on('end', () => {
-            const parsedData = parseJsonResponse(data);
-
-            return callback(parsedData.jokes, parsedData.pages);
-        });
+    return new Promise((resolve, reject) => {
+        const req = https.request(options,
+            (res) => {
+                let body = '';
+                res.on('data', (chunk) => { body += chunk.toString(); });
+                res.on('error', reject);
+                res.on('end', () => {
+                    if (res.statusCode >= 200 && res.statusCode <= 299) {
+                        const parsedData = parseJsonResponse(body);
+                        resolve(parsedData);
+                    } else {
+                        reject(new Error(`Request failed. status: ${res.statusCode}, body: ${body}`));
+                    }
+                });
+            });
+        req.on('error', reject);
+        req.end();
     });
-    req.on('error', (e) => {
-        console.error(e);
-    });
-    req.end();
 }
-exports.httprequest = httprequest;
+module.exports = httpRequest;
