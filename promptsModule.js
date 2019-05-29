@@ -20,6 +20,6 @@ module.exports = {
         ];
         const result = await prompts(questions);
 
-        return result;
+        return { value: result.value, searchTerm: result.searchTerm };
     }
 };

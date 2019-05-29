@@ -1,5 +1,4 @@
 const https = require('https');
-const parseJsonResponse = require('./parseJsonData');
 
 function httpRequest(path) {
     const options = {
@@ -18,8 +17,7 @@ function httpRequest(path) {
                 res.on('error', reject);
                 res.on('end', () => {
                     if (res.statusCode >= 200 && res.statusCode <= 299) {
-                        const parsedData = parseJsonResponse(body);
-                        resolve(parsedData);
+                        resolve(body);
                     } else {
                         reject(new Error(`Request failed. status: ${res.statusCode}, body: ${body}`));
                     }
