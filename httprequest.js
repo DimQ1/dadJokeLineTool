@@ -1,33 +1,24 @@
 const https = require('https');
+const parseJsonResponse = require('./parseJsonData');
 
 function httprequest(path, callback) {
     const options = {
-        hostname: 'icanhazdadjoke.com',
+        hostname: path.host,
         port: 443,
         method: 'GET',
         headers: { Accept: 'application/json' },
-        path
+        path: path.pathname + path.search
     };
 
     const req = https.request(options, (res) => {
         let data = '';
-        let pages = 0;
         res.on('data', (d) => {
             data += d;
         });
         res.on('end', () => {
-            let jokes = '';
-            const parseData = JSON.parse(data);
-            if ('results' in parseData) {
-                JSON.parse(data).results.forEach((element) => {
-                    jokes += `${element.id}|${element.joke}\n`;
-                });
-                pages = (parseData.total_jokes / parseData.limit).toFixed();
-            } else {
-                jokes += `${parseData.id}|${parseData.joke}\n`;
-            }
+            const parsedData = parseJsonResponse(data);
 
-            return callback(jokes, pages);
+            return callback(parsedData.jokes, parsedData.pages);
         });
     });
     req.on('error', (e) => {
