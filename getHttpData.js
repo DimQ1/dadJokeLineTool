@@ -1,26 +1,27 @@
-const { httprequest } = require('./httprequest');
+const httprequest = require('./httprequest');
 
 const saveJoke = require('./saveJoke');
 
 const JokeUrl = new URL('https://icanhazdadjoke.com/');
 
-function getSearchTermJokeData(searchTerm, callback) {
+async function getSearchTermJokeData(searchTerm, callback) {
     const urlPath = new URL(JokeUrl.href);
     urlPath.pathname = '/search';
     urlPath.searchParams.set('term', searchTerm);
-    httprequest(urlPath, (jokes, pages) => {
-        if (pages > 1) {
-            // eslint-disable-next-line no-plusplus
-            for (let i = 1; i < pages; i++) {
-                urlPath.searchParams.set('page', i);
-                httprequest(urlPath, (joke, page) => {
-                    callback(jokes);
-                });
-            }
-        } else {
-            callback(jokes);
+
+    const response = await httprequest(urlPath);
+
+    if (response.pages > 1) {
+        // eslint-disable-next-line no-plusplus
+        for (let i = 1; i < response.pages; i++) {
+            urlPath.searchParams.set('page', i);
+            // eslint-disable-next-line no-await-in-loop
+            const pageResponse = await httprequest(urlPath);
+            saveJoke.toFile(pageResponse.jokes);
         }
-    });
+    } else {
+        saveJoke.toFile(response.jokes);
+    }
 }
 
 const getData = {
@@ -28,9 +29,10 @@ const getData = {
         saveJoke.clearFile();
         getSearchTermJokeData(searchTerm, saveJoke.toFile);
     },
-    randomJoke: function () {
+    randomJoke: async function () {
         saveJoke.clearFile();
-        httprequest(JokeUrl, jokes => saveJoke.toFile(jokes));
+        const response = await httprequest(JokeUrl);
+        saveJoke.toFile(response.jokes);
     }
 };
 
