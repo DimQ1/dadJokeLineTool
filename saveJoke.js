@@ -4,10 +4,10 @@ const fs = require('fs');
 module.exports = function (fileName) {
     const filePath = path.join(__dirname, fileName);
 
-    return function (textJoke) {
-        fs.appendFile(filePath, textJoke, (err) => {
+    return function (text) {
+        fs.appendFile(filePath, text, (err) => {
             if (err) throw err;
-            console.log(textJoke);
+            console.log(text);
         });
     };
 };
