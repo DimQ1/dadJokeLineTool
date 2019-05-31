@@ -7,7 +7,6 @@ module.exports = function (fileName) {
     return function (text) {
         fs.appendFile(filePath, text, (err) => {
             if (err) throw err;
-            console.log(text);
         });
     };
 };
