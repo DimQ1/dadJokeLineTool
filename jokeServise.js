@@ -2,7 +2,7 @@ const httprequest = require('./httprequest');
 const saveJoke = require('./saveJoke')('joke.txt');
 const loadJokeFromFile = require('./loadJokeFromFile')('joke.txt');
 const parseJsonResponse = require('./parseJsonData');
-const leaderJoke = require('./leaderJoke');
+const getLeaderJoke = require('./getLeaderJoke');
 
 const jokeUrl = new URL('https://icanhazdadjoke.com/');
 
@@ -42,7 +42,7 @@ module.exports = {
     },
     displayLeaderboardJoke: (async () => {
         const jokes = await loadJokeFromFile();
-        const liderJokeText = await leaderJoke(jokes);
+        const liderJokeText = await getLeaderJoke(jokes);
         console.log(liderJokeText);
 
         return liderJokeText;

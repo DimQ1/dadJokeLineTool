@@ -1,8 +1,8 @@
 module.exports = (async (jokes) => {
-    const jokeStatistic = jokes.reduce((acc, el) => {
-        acc[el.id] = { count: (acc[el.id] ? acc[el.id].count : 0) + 1, joke: el.joke };
+    const jokeStatistic = jokes.reduce((statisticsAccumulator, joke) => {
+        statisticsAccumulator[joke.id] = { count: (statisticsAccumulator[joke.id] ? statisticsAccumulator[joke.id].count : 0) + 1, joke: joke.joke };
 
-        return acc;
+        return statisticsAccumulator;
     }, {});
 
     let maxVal;

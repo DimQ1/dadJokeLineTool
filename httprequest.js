@@ -1,6 +1,6 @@
 const https = require('https');
 
-function httpRequest(path) {
+module.exports = (path) => {
     const options = {
         hostname: path.host,
         port: 443,
@@ -13,11 +13,11 @@ function httpRequest(path) {
         const req = https.request(options,
             (res) => {
                 let body = '';
-                res.on('data', (chunk) => { body += chunk.toString(); });
+                res.on('data', (chunk) => { body += chunk; });
                 res.on('error', reject);
                 res.on('end', () => {
                     if (res.statusCode >= 200 && res.statusCode <= 299) {
-                        resolve(body);
+                        resolve(body.toString());
                     } else {
                         reject(new Error(`Request failed. status: ${res.statusCode}, body: ${body}`));
                     }
@@ -26,5 +26,4 @@ function httpRequest(path) {
         req.on('error', reject);
         req.end();
     });
-}
-module.exports = httpRequest;
+};

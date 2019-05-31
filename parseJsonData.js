@@ -7,7 +7,7 @@ function parseJsonResponseData(data) {
     let pages = 0;
     const parseData = JSON.parse(data);
     if ('results' in parseData) {
-        JSON.parse(data).results.forEach((element) => {
+        parseData.results.forEach((element) => {
             jokes += convertJokeToStr(element);
         });
         pages += (parseData.total_jokes / parseData.limit).toFixed();

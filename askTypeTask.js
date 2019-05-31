@@ -13,7 +13,7 @@ module.exports = async () => {
             ]
         },
         {
-            type: prev => prev === 1 ? 'text' : null,
+            type: selectTypeQuery => selectTypeQuery === 1 ? 'text' : null,
             name: 'searchTerm',
             message: 'input search term please'
         }
