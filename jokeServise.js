@@ -1,57 +1,78 @@
 /* eslint-disable no-console */
-const httpRequest = require('./httpRequest');
-const saveTextToFile = require('./saveTextToFile')('joke.txt');
-const loadJokeFromFile = require('./loadJokeFromFile')('joke.txt');
-const parseJsonResponse = require('./parseJsonData');
-const getLeaderJoke = require('./getLeaderJoke');
+const requestJsonJoke = require('./requestJsonJoke');
+const saveTextToFile = require('./saveTextToFile')(process.env.jokeFileName || 'joke.txt');
+const loadJokeFromFile = require('./loadJokeFromFile')(process.env.jokeFileName || 'joke.txt');
+const parseJokeJsonResponse = require('./parseJokeJsonResponse');
 
 const jokeUrl = new URL('https://icanhazdadjoke.com/');
 
-async function getSearchTermJokeData(searchTerm) {
-    const urlPath = new URL(jokeUrl.href);
-    urlPath.pathname = '/search';
-    urlPath.searchParams.set('term', searchTerm);
+async function getJokes(term) {
+    const jokeTermUrl = new URL(jokeUrl.href);
+    jokeTermUrl.pathname = '/search';
+    jokeTermUrl.searchParams.set('term', term);
 
-    let jokes;
-    const response = await httpRequest(urlPath);
-    const parsedData = parseJsonResponse(response);
-    jokes += parsedData.jokes;
-    if (parsedData.pages > 1) {
+    let jokeByStrLines;
+    const jokeJsonResponse = await requestJsonJoke(jokeTermUrl);
+    const parsedJokeJson = parseJokeJsonResponse(jokeJsonResponse);
+    jokeByStrLines += parsedJokeJson.jokeByStrLines;
+    if (parsedJokeJson.pages > 1) {
         const responses = [];
         // eslint-disable-next-line no-plusplus
-        for (let i = 1; i < parsedData.pages; i++) {
-            urlPath.searchParams.set('page', i);
-            responses.push(httpRequest(urlPath));
+        for (let i = 1; i < parsedJokeJson.pages; i++) {
+            jokeTermUrl.searchParams.set('page', i);
+            responses.push(requestJsonJoke(jokeTermUrl));
         }
         await Promise.all(responses)
-            .then(results => results.forEach((pageResponse) => {
-                const parsedPageData = parseJsonResponse(pageResponse);
-                jokes += parsedPageData.jokes;
+            .then(results => results.forEach((pageJokeJsonResponse) => {
+                const parsedJokeJsonPage = parseJokeJsonResponse(pageJokeJsonResponse);
+                jokeByStrLines += parsedJokeJsonPage.jokeByStrLines;
             }));
     }
-    saveTextToFile(jokes);
+    await saveTextToFile(jokeByStrLines);
 
-    return jokes;
+    return jokeByStrLines;
+}
+
+function getLeaderJoke(jokeByStrLines) {
+    const jokeStatistic = jokeByStrLines.reduce((statisticsAccumulator, joke) => {
+        const count = (statisticsAccumulator[joke.id] ? statisticsAccumulator[joke.id].count : 0) + 1;
+        statisticsAccumulator[joke.id] = { count, joke: joke.text };
+
+        return statisticsAccumulator;
+    }, {});
+
+    let maxVal;
+    let leaderJokeId;
+
+    // eslint-disable-next-line no-restricted-syntax
+    for (const [key, value] of Object.entries(jokeStatistic)) {
+        if (!maxVal || value.count > maxVal) {
+            maxVal = value.count;
+            leaderJokeId = key;
+        }
+    }
+
+    return jokeStatistic[leaderJokeId].joke;
 }
 
 module.exports = {
-    searchJoke: async function (searchTerm) {
-        const jokes = await getSearchTermJokeData(searchTerm);
-        console.log(jokes);
+    searchJoke: async function (term) {
+        const jokeByStrLines = await getJokes(term);
+        console.log(jokeByStrLines);
 
-        return jokes;
+        return jokeByStrLines;
     },
     getRandomJoke: async function () {
-        const response = await httpRequest(jokeUrl);
-        const parsedData = parseJsonResponse(response);
-        saveTextToFile(parsedData.jokes);
-        console.log(parsedData.jokes);
+        const jokeJsonResponse = await requestJsonJoke(jokeUrl);
+        const parsedJokeJson = parseJokeJsonResponse(jokeJsonResponse);
+        await saveTextToFile(parsedJokeJson.jokeByStrLines);
+        console.log(parsedJokeJson.jokeByStrLines);
 
-        return parsedData.jokes;
+        return parsedJokeJson.jokeByStrLines;
     },
     displayLeaderboardJoke: (async () => {
-        const jokes = await loadJokeFromFile();
-        const liderJokeText = await getLeaderJoke(jokes);
+        const jokeByStrLines = await loadJokeFromFile();
+        const liderJokeText = getLeaderJoke(jokeByStrLines);
         console.log(liderJokeText);
 
         return liderJokeText;

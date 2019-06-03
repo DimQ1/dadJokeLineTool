@@ -4,12 +4,12 @@ module.exports = async () => {
     const questions = [
         {
             type: 'select',
-            name: 'value',
+            name: 'typeTask',
             message: 'select type query?',
             choices: [
-                { title: 'Random', value: 0 },
-                { title: 'Search Tearm', value: 1 },
-                { title: 'Display liderboard joke', value: 2 }
+                { title: 'Random', typeTask: 0 },
+                { title: 'Search Tearm', typeTask: 1 },
+                { title: 'Liderboard joke', typeTask: 2 }
             ]
         },
         {
@@ -20,5 +20,5 @@ module.exports = async () => {
     ];
     const result = await prompts(questions);
 
-    return { value: result.value, searchTerm: result.searchTerm };
+    return { typeTask: result.typeTask, searchTerm: result.searchTerm };
 };
