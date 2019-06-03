@@ -1,19 +1,19 @@
 const https = require('https');
 
-module.exports = (path) => {
+module.exports = (jokeUrl) => {
     const options = {
-        hostname: path.host,
+        hostname: jokeUrl.host,
         port: 443,
         method: 'GET',
         headers: { Accept: 'application/json' },
-        path: path.pathname + path.search
+        path: jokeUrl.pathname + jokeUrl.search
     };
 
     return new Promise((resolve, reject) => {
         const req = https.request(options,
             (res) => {
-                let body = '';
-                res.on('data', (chunk) => { body += chunk; });
+                const body = [];
+                res.on('data', (chunk) => { body.push(chunk); });
                 res.on('error', reject);
                 res.on('end', () => {
                     if (res.statusCode >= 200 && res.statusCode <= 299) {
