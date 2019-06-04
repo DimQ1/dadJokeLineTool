@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
-const requestJsonJoke = require('./requestJsonJoke');
-const saveTextToFile = require('./saveTextToFile')(process.env.jokeFileName || 'joke.txt');
-const loadJokeFromFile = require('./loadJokeFromFile')(process.env.jokeFileName || 'joke.txt');
+const requestJsonJoke = require('./httpRequest');
+const saveTextToFile = require('./saveTextToFile')(process.env.JOKE_FILE_NAME || 'joke.txt');
+const loadJokeFromFile = require('./loadJokeFromFile')(process.env.JOKE_FILE_NAME || 'joke.txt');
 const parseJokeJsonResponse = require('./parseJokeJsonResponse');
 
 const jokeUrl = new URL('https://icanhazdadjoke.com/');
@@ -11,7 +11,7 @@ async function getJokes(term) {
     jokeTermUrl.pathname = '/search';
     jokeTermUrl.searchParams.set('term', term);
 
-    let jokeByStrLines;
+    let jokeByStrLines = '';
     const jokeJsonResponse = await requestJsonJoke(jokeTermUrl);
     const parsedJokeJson = parseJokeJsonResponse(jokeJsonResponse);
     jokeByStrLines += parsedJokeJson.jokeByStrLines;
@@ -26,7 +26,10 @@ async function getJokes(term) {
             .then(results => results.forEach((pageJokeJsonResponse) => {
                 const parsedJokeJsonPage = parseJokeJsonResponse(pageJokeJsonResponse);
                 jokeByStrLines += parsedJokeJsonPage.jokeByStrLines;
-            }));
+            }))
+            .catch((err) => {
+                console.log(err);
+            });
     }
     await saveTextToFile(jokeByStrLines);
 

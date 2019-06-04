@@ -1,3 +1,3 @@
 const jokeServise = require('./jokeServise');
 
-jokeServise.getRandomJoke();
+jokeServise.searchJoke('dad');
