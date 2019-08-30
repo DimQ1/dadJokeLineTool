@@ -1,12 +1,12 @@
 const https = require('https');
 
-module.exports = (jokeUrl) => {
+module.exports = (requestUrl) => {
     const options = {
-        hostname: jokeUrl.host,
+        hostname: requestUrl.host,
         port: 443,
         method: 'GET',
         headers: { Accept: 'application/json' },
-        path: jokeUrl.pathname + jokeUrl.search
+        path: requestUrl.pathname + requestUrl.search
     };
 
     return new Promise((resolve, reject) => {
@@ -17,7 +17,7 @@ module.exports = (jokeUrl) => {
                 res.on('error', reject);
                 res.on('end', () => {
                     if (res.statusCode >= 200 && res.statusCode <= 299) {
-                        resolve(body.toString());
+                        resolve(body.toString('utf8'));
                     } else {
                         reject(new Error(`Request failed. status: ${res.statusCode}, body: ${body}`));
                     }
